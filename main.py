@@ -52,6 +52,7 @@ class CustomListItem(QWidget):
         self.product_code = product_code
         self.ch = children
         self.art = art
+        print(art)
      
     def setupUi(self):
         """
@@ -103,19 +104,6 @@ class MainWindow(QMainWindow):
         self.mongoDB = MongoDB()
         self.mongoDB.insert_test_data()
         
-        # self.mongoDB.deleteAll()
-        # parents = [172,169,173]
-    
-        # for parent in parents:
-        #     self.mongoDB.insert_parent(
-        #         parent,
-        #         1122,
-        #         629,
-        #         "PIR...", 
-        #         f"name for {parent}",
-        #         f"description for {parent}",
-        #         )
-
         self.loadListFromMongoDb()
         
     def setupUi(self):
@@ -227,8 +215,11 @@ class MainWindow(QMainWindow):
                 item.get("product_code") if item.get("product_code") else product_code,
                 # item.get("children")
                 )
-            # custom_item.clicked.connect(lambda item=item: self.onItemClicked(item))
-            custom_item.clicked.connect(lambda: self.onItemClicked(custom_item))
+            
+            custom_item.clicked.connect(
+                lambda item=custom_item: self.onItemClicked(item)
+            )
+            
             self.grid_layout.addWidget(
                 custom_item, 
                 row, 
@@ -259,50 +250,24 @@ class MainWindow(QMainWindow):
             print("Не удалось найти подходящий сетевой менеджер")  
             
 
-    # def onItemClicked(self, item_data: dict):
-    #     # очистить весь грид лейаут
-    #     for i in reversed(range(self.grid_layout.count())): 
-    #         widget = self.grid_layout.itemAt(i).widget()
-    #         if widget:
-    #             widget.deleteLater()
-        
-    #     # если есть поле children, тогда подключаем функцию на отображение детей
-    #     # если нет, тогда запуск печати датаматрикс
-
-    #     if item_data.get("children"):
-    #         self.setItemOnLayout(item_data.get("children"))
-    #     else:
-    #         print("print!!!")
-    #         serial_pattern = "%06d"
-    #         year = "25"
-    #         month = "07"
-    #         serial = serial_pattern % i
-
-    #         # all_datamatrix_code = code + art + place + year + month + serial
-    #         # dm = DataMatrix(
-    #         #     msg=all_datamatrix_code,
-    #         #     pixel_size=50,
-    #         #     left_offset=200,
-    #         #     down_offset=140,
-    #         # )
-    #         # dm.drone_datamatrix(f'missed/{all_datamatrix_code}.png', all_datamatrix_code)
-    #         # print(all_datamatrix_code, f"complete {i + 1}/1000")
-
-
-    def onItemClicked(self, item: CustomListItem):
+    def onItemClicked(self, list_item: CustomListItem):
         for i in reversed(range(self.grid_layout.count())): 
             widget = self.grid_layout.itemAt(i).widget()
             if widget:
                 widget.deleteLater()
 
-        print(item.art)
-        ch = self.mongoDB.get_by_art(item.art)
-        # print(ch)
-        # if item.ch:
-        #     self.setItemOnLayout(self.mongoDB.get_by_art(item.art), item.product_code)
-        # else:
-        #     print("print!!!")
-        #     print(f"{item.product_code}")
+        print(f"listItem.art {list_item.art}")
+        item = self.mongoDB.get_by_art(list_item.art)
+        
+        children = item.get("children")
+        # for child in ch:
+        #     print(child)
+        if children:
+            # self.setItemOnLayout(self.mongoDB.get_by_art(item.art), item.product_code)
+            self.setItemOnLayout(children, list_item.product_code)
+        else:
+            print("print!!!")
+            print(f"{item.product_code}")
             
             
 

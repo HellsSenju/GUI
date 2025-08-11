@@ -1,7 +1,6 @@
 
 from typing import Optional
 
-
 level = 0 
 
 def recursion()-> Optional[str]:

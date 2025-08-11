@@ -1,9 +1,43 @@
 from pymongo import MongoClient
+from pymongo.errors import ConnectionFailure
+import msgspec
+
+
+
+class LeafNode(msgspec.Struct):
+    art: str
+    name: str
+    description: str
+    image_path: str
+    type_additional: str
+    name_additional: str
+    children: list["LeafNode"] = []
+
+
+LeafNode.__annotations__["children"] = list[LeafNode]
+
+class RootNode(msgspec.Struct):
+    type: int
+    product_code: int
+    place: int
+    art: str
+    name: str
+    description: str
+    image_path: str
+    children: list[LeafNode]
+
+
 
 class Database():
     def __init__(self):
-        self.client = MongoClient("localhost", 27017)
-        self.db =  self.client["testDB"]
+        try:
+            self.client = MongoClient("mongodb://localhost:27017/")
+            self.client.admin.command('ping')
+            self.db =  self.client["testDB"]
+        except ConnectionFailure as e:
+            print(f"Ошибка подключения: {e}")
+
+
         
         
     def insert_test_data(self):
@@ -12,42 +46,61 @@ class Database():
         items = [172,169,173]
     
         for item in items:
-            new_item = {
-                "type": item,
-                "product_code": 1122,
-                "place": 629,
-                "art": f"PIR_{item}",
-                "name": f"{item}",
-                "description": f"description for {item}",
-                "image_path": "image.png",                
-                "children": [
-                    {
-                        "art": f"PIR_1_{item}",
-                        "name": f"1_{item}",
-                        "description": f"desc for child 1 of {item}",
-                        "image_path": "image.png",                
-                        "type_additional": "some type_additional",
-                        "name_additional": "some name_additional",
-                    },
-                    {
-                        "art": f"PIR_2_{item}",
-                        "name": f"2_{item}",
-                        "description": f"desc for child 2 of {item}",
-                        "image_path": "image.png",                
-                        "type_additional": "some type_additional",
-                        "name_additional": "some name_additional",
-                    },
-                    {
-                        "art": f"PIR_3_{item}",
-                        "name": f"3_{item}",
-                        "description": f"desc for child 3 of {item}",
-                        "image_path": "image.png",                
-                        "type_additional": "some type_additional",
-                        "name_additional": "some name_additional",
-                    },
+            data = RootNode(
+                type=item,
+                product_code=1122,
+                place=629,
+                art=f"PIR_{item}",
+                name=f"{item}",
+                description=f"description for {item}",
+                image_path="image.png",
+                children=[
+                    LeafNode(
+                        art=f"PIR_1_{item}",
+                        name=f"1_{item}",
+                        description=f"desc for child 1 of {item}",
+                        image_path="image.png",
+                        type_additional="some type_additional",
+                        name_additional="some name_additional",
+                        children=[
+                            LeafNode(
+                                art=f"PIR_1_1_{item}",
+                                name=f"1_1_{item}",
+                                description=f"desc for child 1 of {item}",
+                                image_path="image.png",
+                                type_additional="some type_additional",
+                                name_additional="some name_additional"
+                            ),
+                            LeafNode(
+                                art=f"PIR_1_2_{item}",
+                                name=f"1_2_{item}",
+                                description=f"desc for child 1 of {item}",
+                                image_path="image.png",
+                                type_additional="some type_additional",
+                                name_additional="some name_additional"
+                            )
+                        ]
+                    ),
+                    LeafNode(
+                        art=f"PIR_2_{item}",
+                        name=f"2_{item}",
+                        description=f"desc for child 2 of {item}",
+                        image_path="image.png",
+                        type_additional="some type_additional",
+                        name_additional="some name_additional"
+                    ),
+                    LeafNode(
+                        art=f"PIR_3_{item}",
+                        name=f"3_{item}",
+                        description=f"desc for child 3 of {item}",
+                        image_path="image.png",
+                        type_additional="some type_additional",
+                        name_additional="some name_additional"
+                    )
                 ]
-            }
-            
+            )
+
+            new_item = msgspec.to_builtins(data)
             self.db["drones"].insert_one(new_item)
             
         
