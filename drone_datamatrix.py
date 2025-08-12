@@ -2,7 +2,7 @@ from datamatrix import DataMatrix
 
 
 def save_svg(svg_code: str):
-    with open("test.svg", 'w') as f:
+    with open("test.svg", "w") as f:
         f.write(svg_code)
 
 
@@ -37,7 +37,7 @@ missed = [
     285,
     395,
     274,
-    725
+    725,
 ]
 
 for i in missed:
@@ -50,5 +50,5 @@ for i in missed:
         left_offset=200,
         down_offset=140,
     )
-    dm.drone_datamatrix(f'missed/{all_datamatrix_code}.png', all_datamatrix_code)
+    dm.drone_datamatrix(f"missed/{all_datamatrix_code}.png", all_datamatrix_code)
     print(all_datamatrix_code, f"complete {i + 1}/1000")
